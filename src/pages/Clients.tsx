@@ -31,7 +31,7 @@ export default function Clients() {
             </div>
           )}
           <div className="text-sm text-muted-foreground">
-            Modo: {process.env.VITE_API_BASE_URL ? 'API Externa' : 'Supabase Local'}
+            Modo: {import.meta.env.VITE_API_BASE_URL ? 'API Externa' : 'Supabase Local'}
           </div>
         </CardHeader>
         <CardContent>
