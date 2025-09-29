@@ -12,7 +12,11 @@ const corsHeaders = {
 };
 
 async function callPactoAPI(endpoint: string) {
-  const response = await fetch(`https://api.pactosistemas.com.br/v1${endpoint}`, {
+  const fullUrl = `https://api.pactosistemas.com.br/v1${endpoint}`;
+  console.log(`🔄 Tentando chamada para API Pacto: ${fullUrl}`);
+  console.log(`🔑 API Key disponível: ${pactoApiKey ? 'Sim' : 'Não'}`);
+  
+  const response = await fetch(fullUrl, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${pactoApiKey}`,
@@ -22,11 +26,13 @@ async function callPactoAPI(endpoint: string) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`Erro na API Pacto [${response.status}]: ${errorText}`);
+    console.error(`❌ Erro na API Pacto [${response.status}]: ${errorText}`);
     throw new Error(`Pacto API Error: ${response.status} - ${response.statusText}`);
   }
 
-  return await response.json();
+  const data = await response.json();
+  console.log(`✅ API Pacto respondeu com sucesso. Tipo de dados: ${typeof data}`);
+  return data;
 }
 
 async function syncMembers(matricula: string) {
@@ -69,7 +75,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F001',
         nome: 'João Silva Santos',
         email: 'joao.silva@email.com',
-        telefone: '(11) 98765-4321',
+        telefone: '(31) 98765-4321',
         dataMatricula: '2023-01-15',
         plano: { nome: 'Premium Anual', valor: 189.90 },
         status: 'ativo'
@@ -80,7 +86,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F002',
         nome: 'Maria Oliveira Costa',
         email: 'maria.oliveira@email.com',
-        telefone: '(11) 91234-5678',
+        telefone: '(31) 91234-5678',
         dataMatricula: '2023-06-10',
         plano: { nome: 'Black Semestral', valor: 249.90 },
         status: 'ativo'
@@ -91,7 +97,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F003', 
         nome: 'Carlos Eduardo Lima',
         email: 'carlos.lima@email.com',
-        telefone: '(11) 99876-5432',
+        telefone: '(31) 99876-5432',
         dataMatricula: '2022-09-20',
         plano: { nome: 'Premium Mensal', valor: 219.90 },
         status: 'ativo'
@@ -102,7 +108,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F004',
         nome: 'Ana Paula Ferreira',
         email: 'ana.ferreira@email.com',
-        telefone: '(11) 97654-3210',
+        telefone: '(31) 97654-3210',
         dataMatricula: '2023-11-05',
         plano: { nome: 'Standard Trimestral', valor: 149.90 },
         status: 'ativo'
@@ -113,19 +119,18 @@ async function syncMembers(matricula: string) {
         fichaId: 'F005',
         nome: 'Roberto Almeida Junior',
         email: 'roberto.almeida@email.com',
-        telefone: '(11) 98123-4567',
+        telefone: '(31) 98123-4567',
         dataMatricula: '2023-03-12',
         plano: { nome: 'Black Anual', valor: 279.90 },
         status: 'ativo'
       },
-      // Adicionar mais 15 membros mock
       {
         matricula: matricula,
         alunoId: 'A006',
         fichaId: 'F006',
         nome: 'Patricia Santos Lima',
         email: 'patricia.santos@email.com',
-        telefone: '(11) 97777-8888',
+        telefone: '(31) 97777-8888',
         dataMatricula: '2023-02-20',
         plano: { nome: 'Standard Mensal', valor: 129.90 },
         status: 'ativo'
@@ -136,7 +141,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F007',
         nome: 'Fernando Costa Ribeiro',
         email: 'fernando.costa@email.com',
-        telefone: '(11) 96666-7777',
+        telefone: '(31) 96666-7777',
         dataMatricula: '2022-11-15',
         plano: { nome: 'Premium Anual', valor: 189.90 },
         status: 'ativo'
@@ -147,7 +152,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F008',
         nome: 'Juliana Pereira dos Santos',
         email: 'juliana.pereira@email.com',
-        telefone: '(11) 95555-6666',
+        telefone: '(31) 95555-6666',
         dataMatricula: '2023-04-10',
         plano: { nome: 'Black Trimestral', valor: 199.90 },
         status: 'ativo'
@@ -158,7 +163,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F009',
         nome: 'Ricardo Almeida Silva',
         email: 'ricardo.almeida@email.com',
-        telefone: '(11) 94444-5555',
+        telefone: '(31) 94444-5555',
         dataMatricula: '2023-01-05',
         plano: { nome: 'Premium Semestral', valor: 169.90 },
         status: 'ativo'
@@ -169,7 +174,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F010',
         nome: 'Camila Rodrigues Ferreira',
         email: 'camila.rodrigues@email.com',
-        telefone: '(11) 93333-4444',
+        telefone: '(31) 93333-4444',
         dataMatricula: '2023-07-22',
         plano: { nome: 'Standard Anual', valor: 139.90 },
         status: 'ativo'
@@ -180,7 +185,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F011',
         nome: 'Bruno Martins Costa',
         email: 'bruno.martins@email.com',
-        telefone: '(11) 92222-3333',
+        telefone: '(31) 92222-3333',
         dataMatricula: '2022-12-18',
         plano: { nome: 'Black Anual', valor: 279.90 },
         status: 'ativo'
@@ -191,7 +196,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F012',
         nome: 'Larissa Oliveira Santos',
         email: 'larissa.oliveira@email.com',
-        telefone: '(11) 91111-2222',
+        telefone: '(31) 91111-2222',
         dataMatricula: '2023-08-14',
         plano: { nome: 'Premium Mensal', valor: 219.90 },
         status: 'ativo'
@@ -202,7 +207,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F013',
         nome: 'Diego Silva Pereira',
         email: 'diego.silva@email.com',
-        telefone: '(11) 90000-1111',
+        telefone: '(31) 90000-1111',
         dataMatricula: '2023-03-25',
         plano: { nome: 'Standard Trimestral', valor: 149.90 },
         status: 'ativo'
@@ -213,7 +218,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F014',
         nome: 'Vanessa Costa Lima',
         email: 'vanessa.costa@email.com',
-        telefone: '(11) 98888-9999',
+        telefone: '(31) 98888-9999',
         dataMatricula: '2022-10-30',
         plano: { nome: 'Black Semestral', valor: 249.90 },
         status: 'ativo'
@@ -224,7 +229,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F015',
         nome: 'Thiago Fernandes Souza',
         email: 'thiago.fernandes@email.com',
-        telefone: '(11) 97777-0000',
+        telefone: '(31) 97777-0000',
         dataMatricula: '2023-05-12',
         plano: { nome: 'Premium Anual', valor: 189.90 },
         status: 'ativo'
@@ -235,7 +240,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F016',
         nome: 'Amanda Santos Ribeiro',
         email: 'amanda.santos@email.com',
-        telefone: '(11) 96666-1111',
+        telefone: '(31) 96666-1111',
         dataMatricula: '2023-09-08',
         plano: { nome: 'Standard Mensal', valor: 129.90 },
         status: 'ativo'
@@ -246,7 +251,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F017',
         nome: 'Lucas Pereira Alves',
         email: 'lucas.pereira@email.com',
-        telefone: '(11) 95555-2222',
+        telefone: '(31) 95555-2222',
         dataMatricula: '2022-08-17',
         plano: { nome: 'Black Anual', valor: 279.90 },
         status: 'ativo'
@@ -257,7 +262,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F018',
         nome: 'Gabriela Lima Santos',
         email: 'gabriela.lima@email.com',
-        telefone: '(11) 94444-3333',
+        telefone: '(31) 94444-3333',
         dataMatricula: '2023-06-03',
         plano: { nome: 'Premium Semestral', valor: 169.90 },
         status: 'ativo'
@@ -268,7 +273,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F019',
         nome: 'Rafael Costa Oliveira',
         email: 'rafael.costa@email.com',
-        telefone: '(11) 93333-4444',
+        telefone: '(31) 93333-4444',
         dataMatricula: '2023-04-28',
         plano: { nome: 'Standard Anual', valor: 139.90 },
         status: 'ativo'
@@ -279,7 +284,7 @@ async function syncMembers(matricula: string) {
         fichaId: 'F020',
         nome: 'Priscila Almeida Ferreira',
         email: 'priscila.almeida@email.com',
-        telefone: '(11) 92222-5555',
+        telefone: '(31) 92222-5555',
         dataMatricula: '2023-01-30',
         plano: { nome: 'Premium Mensal', valor: 219.90 },
         status: 'ativo'
