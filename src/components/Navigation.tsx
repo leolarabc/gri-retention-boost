@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, CheckSquare, Settings, BarChart3 } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { LayoutDashboard, Users, CheckSquare, Settings, BarChart3, LogOut } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -12,6 +14,7 @@ const navItems = [
 
 export function Navigation() {
   const location = useLocation();
+  const { signOut, user } = useAuth();
 
   return (
     <nav className="border-b border-border bg-card">
@@ -52,11 +55,18 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">Academia Modelo</p>
-              <p className="text-xs text-muted-foreground">Gestor</p>
-            </div>
-            <div className="h-10 w-10 rounded-full bg-gradient-primary" />
+            <span className="text-sm text-muted-foreground">
+              {user?.email}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={signOut}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
           </div>
         </div>
       </div>

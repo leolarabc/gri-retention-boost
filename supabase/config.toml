@@ -1,1 +1,14 @@
 project_id = "sopplhpjnfslhidimqef"
+
+[auth]
+enabled = true
+image = "supabase/gotrue:v2.179.0"
+
+[functions.sync-pacto-data]
+verify_jwt = false
+
+[functions.calculate-risk-scores]  
+verify_jwt = false
+
+[functions.generate-action-items]
+verify_jwt = false
