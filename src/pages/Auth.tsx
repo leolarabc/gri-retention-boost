@@ -47,15 +47,17 @@ export default function Auth() {
         });
 
         if (error) {
+          console.error('Login error:', error);
           if (error.message.includes('Invalid login credentials')) {
             setError('Email ou senha incorretos');
           } else if (error.message.includes('Email not confirmed')) {
             setError('Email não confirmado. Verifique sua caixa de entrada');
           } else {
-            setError('Erro ao fazer login. Tente novamente');
+            setError(`Erro ao fazer login: ${error.message}`);
           }
         } else {
-          navigate('/');
+          setSuccess('Login realizado com sucesso!');
+          setTimeout(() => navigate('/'), 1000);
         }
       } else {
         // Registro
