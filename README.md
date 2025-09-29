@@ -1,4 +1,39 @@
-# Welcome to your Lovable project
+# GRI - Gestão de Retenção Inteligente
+
+Sistema inteligente de previsão e redução de evasão de alunos em academias.
+
+## 🎯 Sobre o Projeto
+
+O GRI analisa padrões de frequência, check-ins e dados administrativos para identificar alunos em risco de cancelamento, permitindo ações proativas de retenção.
+
+## ✨ Funcionalidades Principais
+
+- **Dashboard Executivo**: Métricas-chave, distribuição de risco e visão geral
+- **Gestão de Alunos**: Lista completa com filtros por nível de risco
+- **Perfil Detalhado**: Análise individual com histórico e ações sugeridas
+- **Sistema de Risco**: Classificação em 3 níveis (baixo, médio, alto) com score
+- **Fila de Ações**: Tarefas automáticas priorizadas (N1, N2, N3)
+
+## 🎨 Design System
+
+O projeto utiliza um design system robusto com:
+- Cores semânticas (success, warning, destructive)
+- Gradientes e sombras customizados
+- Transições suaves
+- Variantes de componentes shadcn personalizadas
+
+## 🚀 Próximos Passos
+
+### Backend com Lovable Cloud
+- Banco de dados PostgreSQL para persistência
+- Autenticação de usuários
+- Edge Functions para integração com Pacto API
+- Cron jobs para cálculo diário de risco
+
+### Integrações
+- Pacto API para importação automática de dados
+- WhatsApp/SMS/Email para notificações
+- Webhooks para sistemas externos
 
 ## Project info
 
