@@ -21,6 +21,8 @@ async function callPactoAPI(endpoint: string) {
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Erro na API Pacto [${response.status}]: ${errorText}`);
     throw new Error(`Pacto API Error: ${response.status} - ${response.statusText}`);
   }
 
@@ -33,24 +35,31 @@ async function syncMembers(matricula: string) {
   try {
     // Tentar buscar dados reais da API da Pacto primeiro
     let membersData;
+    let useRealData = false;
+    
     try {
       console.log('Tentando buscar dados reais da API Pacto...');
-      // Buscar lista de alunos
-      const alunosResponse = await callPactoAPI(`/alunos?matricula=${matricula}&limit=100`);
+      console.log(`Endpoint: /alunos?matricula=${matricula}&limit=500`);
+      
+      // Buscar lista de alunos com limite maior
+      const alunosResponse = await callPactoAPI(`/alunos?matricula=${matricula}&limit=500`);
       membersData = alunosResponse.data || alunosResponse;
       
       if (!Array.isArray(membersData)) {
+        console.error('Formato inesperado da resposta:', typeof membersData);
         throw new Error('Formato inesperado da resposta da API');
       }
       
-      console.log(`${membersData.length} membros encontrados na API Pacto`);
+      console.log(`✅ ${membersData.length} membros encontrados na API Pacto`);
       
-      // Se não encontrou dados reais, usar dados expandidos mock
       if (membersData.length === 0) {
         throw new Error('Nenhum membro encontrado na API');
       }
+      
+      useRealData = true;
     } catch (apiError) {
-      console.log('Erro na API Pacto, usando dados mock expandidos:', apiError);
+      console.log('❌ Erro na API Pacto, usando dados mock expandidos:', apiError);
+      console.error('Detalhes do erro:', apiError);
       
       // Dados mock expandidos - simular mais membros
       membersData = [
@@ -314,7 +323,11 @@ async function syncMembers(matricula: string) {
       const telefone = memberData.telefone || memberData.phone || '';
       const dataMatricula = memberData.dataMatricula || memberData.enrollment_date || new Date().toISOString().split('T')[0];
       const planValue = memberData.plano?.valor || memberData.plan_value || 0;
+      const planName = memberData.plano?.nome || memberData.plan_name || 'Plano não informado';
+      const credits = memberData.creditos || memberData.credits || 0;
       const status = (memberData.status === 'ativo' || memberData.status === 'active') ? 'active' : 'cancelled';
+      
+      console.log(`Processando: ${nome} | Plano: ${planName} (R$ ${planValue}) | Créditos: ${credits}`);
 
       // Inserir ou atualizar membro no banco
       const { error } = await supabase
@@ -365,7 +378,7 @@ async function syncCheckins(matricula: string) {
     // Buscar todos os membros da matrícula
     const { data: members } = await supabase
       .from('members')
-      .select('id, pacto_aluno_id, name')
+      .select('id, pacto_aluno_id, pacto_ficha_id, name')
       .eq('pacto_matricula', matricula);
 
     if (!members || members.length === 0) {
@@ -376,25 +389,61 @@ async function syncCheckins(matricula: string) {
     let totalProcessed = 0;
 
     for (const member of members) {
-      // Gerar check-ins mock para cada membro
-      const checkinsCount = 3 + Math.floor(Math.random() * 5); // 3-7 check-ins
+      let checkinsList = [];
       
-      for (let i = 0; i < checkinsCount; i++) {
-        const daysAgo = i * 2 + Math.floor(Math.random() * 3); // Espaçar check-ins
-        const date = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+      // Tentar buscar check-ins reais da API Pacto
+      try {
+        console.log(`Buscando check-ins para ${member.name} (fichaId: ${member.pacto_ficha_id})...`);
         
-        const activities = ['Musculação', 'Funcional', 'Crossfit', 'Cardio', 'Pilates'];
-        const times = ['07:00', '07:30', '08:00', '18:00', '18:30', '19:00', '19:30', '20:00'];
+        // Calcular período dos últimos 30 dias
+        const endDate = new Date().toISOString().split('T')[0];
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         
+        const checkinsResponse = await callPactoAPI(
+          `/checkins?fichaId=${member.pacto_ficha_id}&dataInicio=${startDate}&dataFim=${endDate}`
+        );
+        
+        checkinsList = checkinsResponse.data || checkinsResponse || [];
+        console.log(`✅ ${checkinsList.length} check-ins reais encontrados para ${member.name}`);
+        
+      } catch (apiError) {
+        console.log(`❌ Erro ao buscar check-ins reais para ${member.name}, gerando mock...`);
+      }
+      
+      // Se não encontrou check-ins reais, gerar mock
+      if (checkinsList.length === 0) {
+        const checkinsCount = 3 + Math.floor(Math.random() * 5); // 3-7 check-ins
+        
+        // Gerar check-ins mock
+        for (let i = 0; i < checkinsCount; i++) {
+          const daysAgo = i * 2 + Math.floor(Math.random() * 3);
+          const date = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+          
+          const activities = ['Musculação', 'Funcional', 'Crossfit', 'Cardio', 'Pilates'];
+          const times = ['07:00', '07:30', '08:00', '18:00', '18:30', '19:00', '19:30', '20:00'];
+          
+          checkinsList.push({
+            aulaId: `AULA_MOCK_${member.pacto_aluno_id}_${i}`,
+            data: date.toISOString().split('T')[0],
+            hora: times[Math.floor(Math.random() * times.length)],
+            atividade: activities[Math.floor(Math.random() * activities.length)],
+            confirmado: true
+          });
+        }
+        console.log(`📝 ${checkinsCount} check-ins mock gerados para ${member.name}`);
+      }
+      
+      // Inserir check-ins no banco (reais ou mock)
+      for (const checkin of checkinsList) {
         const { error } = await supabase
           .from('checkins')
           .upsert({
             member_id: member.id,
-            pacto_aula_id: `AULA_${member.pacto_aluno_id}_${i}`,
-            checkin_date: date.toISOString().split('T')[0],
-            checkin_time: times[Math.floor(Math.random() * times.length)],
-            activity: activities[Math.floor(Math.random() * activities.length)],
-            confirmed: true,
+            pacto_aula_id: checkin.aulaId || checkin.aula_id || `AULA_${member.pacto_aluno_id}_${Date.now()}`,
+            checkin_date: checkin.data || checkin.date,
+            checkin_time: checkin.hora || checkin.time || '12:00',
+            activity: checkin.atividade || checkin.activity,
+            confirmed: checkin.confirmado !== undefined ? checkin.confirmado : true,
           }, {
             onConflict: 'member_id,pacto_aula_id'
           });
@@ -404,7 +453,7 @@ async function syncCheckins(matricula: string) {
         }
       }
       
-      console.log(`Check-ins criados para ${member.name}: ${checkinsCount}`);
+      console.log(`✅ ${checkinsList.length} check-ins processados para ${member.name}`);
     }
 
     return { success: true, processed: totalProcessed };
