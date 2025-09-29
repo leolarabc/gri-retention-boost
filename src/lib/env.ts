@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 const Schema = z.object({
-  VITE_SUPABASE_URL: z.string().url().optional(),
-  VITE_SUPABASE_ANON_KEY: z.string().min(10).optional(),
+  VITE_SUPABASE_URL: z.string().url(),
+  VITE_SUPABASE_ANON_KEY: z.string().min(10),
+  VITE_SITE_URL: z.string().url().default("http://localhost:5173"),
+  VITE_SUPABASE_REDIRECT_URL: z.string().url().optional(),
   VITE_API_BASE_URL: z.string().url().optional(),
 });
 
@@ -15,5 +17,7 @@ if (!parsed.success) {
 export const ENV = {
   SUPABASE_URL: parsed.data.VITE_SUPABASE_URL,
   SUPABASE_ANON: parsed.data.VITE_SUPABASE_ANON_KEY,
+  SITE_URL: parsed.data.VITE_SITE_URL,
+  REDIRECT_URL: parsed.data.VITE_SUPABASE_REDIRECT_URL ?? `${parsed.data.VITE_SITE_URL}/auth/callback`,
   API_BASE_URL: parsed.data.VITE_API_BASE_URL,
 };
