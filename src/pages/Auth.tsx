@@ -43,14 +43,17 @@ export default function Auth() {
 
     try {
       // Validar dados
+      console.log("Tentando autenticar com:", { email: formData.email, isLogin });
       const validatedData = authSchema.parse(formData);
       
       if (isLogin) {
         // Login
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log("Tentando login...");
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: validatedData.email,
           password: validatedData.password,
         });
+        console.log("Resultado do login:", { data, error });
 
         if (error) {
           console.error('Login error:', error);
