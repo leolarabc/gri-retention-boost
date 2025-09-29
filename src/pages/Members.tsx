@@ -5,38 +5,72 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockMembers } from '@/lib/mock-data';
+import { useMembers } from '@/hooks/useData';
 import { RiskLevel } from '@/types/member';
-import { Search, Filter, Phone, Mail, ChevronRight } from 'lucide-react';
+import { Search, Filter, Phone, Mail, ChevronRight, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function Members() {
   const navigate = useNavigate();
+  const { members, isLoading, error, refetch } = useMembers();
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState<RiskLevel | 'all'>('all');
 
-  const filteredMembers = mockMembers.filter((member) => {
+  const filteredMembers = (members || []).filter((member: any) => {
     const matchesSearch =
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.phone.includes(searchQuery);
-    const matchesRisk = riskFilter === 'all' || member.riskLevel === riskFilter;
+      member.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.phone?.includes(searchQuery);
+    const matchesRisk = riskFilter === 'all' || member.risk_level === riskFilter;
     return matchesSearch && matchesRisk;
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <RefreshCw className="mx-auto h-8 w-8 animate-spin text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Carregando alunos...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="mb-2 text-4xl font-bold">Alunos</h1>
-          <p className="text-muted-foreground">
-            Gerencie e monitore todos os alunos da academia
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="mb-2 text-4xl font-bold">Alunos</h1>
+            <p className="text-muted-foreground">
+              Gerencie e monitore todos os alunos da academia
+            </p>
+          </div>
+
+          <Button
+            onClick={() => refetch()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Atualizar
+          </Button>
         </div>
+
+        {error && (
+          <div className="mb-6 rounded-lg bg-destructive/10 p-4 text-destructive">
+            <p className="font-medium">Erro ao carregar alunos</p>
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Filters */}
         <Card className="mb-6">
@@ -110,12 +144,12 @@ export default function Members() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-primary text-lg font-bold text-white">
                       {member.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                     </div>
-                    <div>
-                      <h3 className="font-semibold group-hover:text-primary transition-base">
-                        {member.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">{member.planName}</p>
-                    </div>
+                        <div>
+                          <h3 className="font-semibold group-hover:text-primary transition-base">
+                            {member.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">{member.current_plan?.name || 'Sem plano'}</p>
+                        </div>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 transition-base group-hover:opacity-100" />
                 </div>
@@ -123,11 +157,11 @@ export default function Members() {
                 <div className="mb-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail className="h-3.5 w-3.5" />
-                    <span className="truncate">{member.email}</span>
+                    <span className="truncate">{member.email || 'Sem email'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="h-3.5 w-3.5" />
-                    <span>{member.phone}</span>
+                    <span>{member.phone || 'Sem telefone'}</span>
                   </div>
                 </div>
 
@@ -135,21 +169,21 @@ export default function Members() {
                   <div>
                     <p className="text-xs text-muted-foreground">Último check-in</p>
                     <p className="text-sm font-semibold">
-                      {member.lastCheckIn
-                        ? format(new Date(member.lastCheckIn), "dd/MM/yyyy", { locale: ptBR })
+                      {member.last_checkin
+                        ? format(parseISO(member.last_checkin), "dd/MM/yyyy", { locale: ptBR })
                         : 'Nunca'}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Check-ins (mês)</p>
-                    <p className="text-sm font-semibold">{member.checkInsThisMonth}</p>
+                    <p className="text-sm font-semibold">{member.checkins_this_month || 0}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <RiskBadge level={member.riskLevel} size="sm" />
+                  <RiskBadge level={member.risk_level} size="sm" />
                   <Badge variant="outline" className="text-xs">
-                    {member.daysSinceLastCheckIn}d sem check-in
+                    {member.days_since_last_checkin || 0}d sem check-in
                   </Badge>
                 </div>
               </CardContent>
