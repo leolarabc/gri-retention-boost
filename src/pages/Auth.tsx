@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Lock, Mail, User, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
@@ -34,12 +34,6 @@ export default function Auth() {
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-
-    if (!supabase) {
-      setError('Sistema de autenticação não configurado');
-      setIsLoading(false);
-      return;
-    }
 
     try {
       // Validar dados

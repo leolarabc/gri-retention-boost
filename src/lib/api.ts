@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ApiResponse<T> {
   data?: T;
@@ -7,9 +7,6 @@ export interface ApiResponse<T> {
 
 // Funções para gerenciar membros
 export async function getMembers() {
-  if (!supabase) {
-    return { error: 'Sistema não configurado' };
-  }
   const { data, error } = await supabase
     .from('members')
     .select(`
