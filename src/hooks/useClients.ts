@@ -15,9 +15,6 @@ export function useClients() {
     let off = false;
     (async () => {
       setLoading(true); setError(null);
-      console.log("ENV.API_BASE_URL:", ENV.API_BASE_URL);
-      console.log("ENV.SUPABASE_URL:", ENV.SUPABASE_URL);
-      console.log("supabase instance:", !!supabase);
       try {
         if (ENV.API_BASE_URL) {
           const clients = await getClientsHTTP();
